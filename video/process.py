@@ -1,6 +1,6 @@
 """Субтитри + лого на ЦПО + забързване, в стила на „Мокри помещения“.
 
-Употреба: [ASS=субтитри.ass | SUBS=субтитри.srt] [CARDS=папка] [LOGO_HUE=330 | LOGO_COLOR=1CB5B5] [LOGO_SIDE=right|left]
+Употреба: [ASS=субтитри.ass | SUBS=субтитри.srt] [CARDS=папка] [LOGO_HUE=330 | LOGO_COLOR=1CB5B5] [LOGO_SIDE=right|left] [NO_INTRO=1]
           python3 process.py вход.mp4 изход.mp4 [скорост=1.1] [logo-cpo.png]
 
 Субтитрите се изгарят върху оригиналния клип (таймингите са спрямо него), после се забързва.
@@ -98,12 +98,14 @@ if not cards:
     os.replace(f'{tmp}/main.mp4', out)
 else:
     sc = f'scale={W}:{H}:force_original_aspect_ratio=decrease,pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,fps=30,format=yuv420p,setsar=1'
-    run('ffmpeg', '-y', '-v', 'error',
-        '-loop', '1', '-t', '3', '-i', f'{cards}/intro.png', '-i', f'{tmp}/main.mp4',
-        '-loop', '1', '-t', '4', '-i', f'{cards}/end.png',
-        '-f', 'lavfi', '-t', '3', '-i', 'anullsrc=r=48000:cl=stereo',
-        '-f', 'lavfi', '-t', '4', '-i', 'anullsrc=r=48000:cl=stereo', '-filter_complex',
-        f'[0:v]{sc}[a0];[1:v]{sc}[a1];[2:v]{sc}[a2];[1:a]aresample=48000,aformat=channel_layouts=stereo[m];'
-        '[a0][3:a][a1][m][a2][4:a]concat=n=3:v=1:a=1[v][a]',
+    intro = os.environ.get('NO_INTRO') != '1'  # NO_INTRO=1: видеото тръгва директно, само с финал
+    ins = (['-loop', '1', '-t', '3', '-i', f'{cards}/intro.png'] if intro else []) + ['-i', f'{tmp}/main.mp4',
+        '-loop', '1', '-t', '4', '-i', f'{cards}/end.png', '-f', 'lavfi', '-t', '4', '-i', 'anullsrc=r=48000:cl=stereo']
+    if intro: ins += ['-f', 'lavfi', '-t', '3', '-i', 'anullsrc=r=48000:cl=stereo']
+    m, e, se = (1, 2, 3) if intro else (0, 1, 2)  # индекси: основно видео, финал, тишина за финала
+    fc = f'[{m}:v]{sc}[vm];[{e}:v]{sc}[ve];[{m}:a]aresample=48000,aformat=channel_layouts=stereo[am];'
+    fc += f'[0:v]{sc}[vi];[vi][4:a][vm][am][ve][{se}:a]concat=n=3:v=1:a=1[v][a]' if intro else \
+          f'[vm][am][ve][{se}:a]concat=n=2:v=1:a=1[v][a]'
+    run('ffmpeg', '-y', '-v', 'error', *ins, '-filter_complex', fc,
         '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-crf', '18', '-c:a', 'aac', out)
 print('Готово:', out)
