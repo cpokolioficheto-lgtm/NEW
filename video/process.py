@@ -14,12 +14,12 @@ def run(*a): subprocess.run(a, check=True)
 
 info = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-select_streams', 'v:0',
     '-show_entries', 'stream=width,height', '-of', 'json', src]))['streams'][0]
-W, H = info['width'], info['height']; k = H / 1080
+W, H = info['width'], info['height']; k = min(W, H) / 1080; VERT = H > W
 
 # бяло лого (както на крайния кадър), височина 80px при 1080p
 lg = Image.open(logo_path).convert('RGBA'); lg = lg.crop(lg.getbbox())
 w = Image.new('RGBA', lg.size, (255, 255, 255, 0)); w.putalpha(lg.getchannel('A'))
-lh = int(80 * k); w = w.resize((int(lg.width * lh / lg.height), lh), Image.LANCZOS)
+lh = int((90 if VERT else 80) * k); w = w.resize((int(lg.width * lh / lg.height), lh), Image.LANCZOS)
 w.save(f'{tmp}/logo.png')
 
 # 1) забързване
@@ -43,16 +43,18 @@ else:
     os.environ.setdefault('HF_ENDPOINT', 'https://hf-mirror.com')
     from faster_whisper import WhisperModel
     model = WhisperModel(os.environ.get('WHISPER_MODEL', 'medium'), compute_type='int8')
-    segs, _ = model.transcribe(fast, language='bg', vad_filter=True)
+    import numpy as np  # звукът се подава като масив (PyAV в средата е несъвместим)
+    raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', fast, '-ac', '1', '-ar', '16000', '-f', 's16le', '-'])
+    segs, _ = model.transcribe(np.frombuffer(raw, np.int16).astype(np.float32) / 32768, language='bg', vad_filter=True)
 
 def ts(t):
     h, m = divmod(t, 3600); m, s = divmod(m, 60); return f'{int(h)}:{int(m):02d}:{s:05.2f}'
 
 # стил: бял Inter SemiBold 54, полупрозрачна черна кутия долу в центъра
-fs = int(54 * k)
+fs = int((66 if VERT else 54) * k); mv = int(H * 0.2) if VERT else int(125 * k)  # вертикално: над бутоните на Reels/TikTok
 ass = [f'[Script Info]\nScriptType: v4.00+\nPlayResX: {W}\nPlayResY: {H}\n\n[V4+ Styles]',
        'Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV',
-       f'Style: Default,Inter SemiBold,{fs},&H00FFFFFF,&H69000000,&H69000000,0,3,{int(14*k)},0,2,{int(60*k)},{int(60*k)},{int(125*k)}',
+       f'Style: Default,Inter SemiBold,{fs},&H00FFFFFF,&H69000000,&H69000000,0,3,{int(14*k)},0,2,{int(60*k)},{int(60*k)},{mv}',
        '\n[Events]\nFormat: Layer, Start, End, Style, Text']
 srt = []
 for i, s in enumerate(segs, 1):
@@ -63,7 +65,7 @@ open(f'{tmp}/subs.ass', 'w').write('\n'.join(ass) + '\n')
 open(os.path.splitext(out)[0] + '.srt', 'w').write('\n'.join(srt))
 
 # 3) лого горе вдясно + субтитри
-x, y = int(W - 170 * k - w.width / 2), int(90 * k - lh / 2)
+x, y = int(W - 50 * k - w.width), int((150 if VERT else 50) * k)
 run('ffmpeg', '-y', '-v', 'error', '-i', fast, '-i', f'{tmp}/logo.png', '-filter_complex',
     f'[0:v][1:v]overlay={x}:{y},subtitles={tmp}/subs.ass:fontsdir=/usr/share/fonts/opentype/inter[v]',
     '-map', '[v]', '-map', '0:a', '-c:v', 'libx264', '-crf', '18', '-c:a', 'copy', f'{tmp}/main.mp4')

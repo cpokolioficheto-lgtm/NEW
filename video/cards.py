@@ -7,7 +7,10 @@ if rd: rd=rd.crop(rd.getbbox())
 TITLE=sys.argv[4] if len(sys.argv)>4 else 'ЦПО Кольо Фичето вече и в София!'
 def whiten(l):
     w=Image.new('RGBA',l.size,(255,255,255,0)); w.putalpha(l.getchannel('A')); return w
-DARK=(19,116,118); LIGHT=(28,181,181); W,H=1920,1080
+import os
+DARK=(19,116,118); LIGHT=(28,181,181)
+VERT=os.environ.get('VERTICAL')=='1'  # 1080x1920 за Reels/TikTok
+W,H=(1080,1920) if VERT else (1920,1080)
 F='/usr/share/fonts/opentype/inter/Inter-%s.otf'
 def font(w,s): return ImageFont.truetype(F%w,s)
 def ctext(d,y,t,f,fill):
@@ -20,9 +23,13 @@ if rd:
     place(im,logo,750,H*0.42,260)
     d.line((1149,H*0.42-120,1149,H*0.42+120),fill=LIGHT,width=4)
     place(im,rd,1359,H*0.42,260)
+elif VERT: place(im,logo,W/2,H*0.40,320)
 else: place(im,logo,W/2,H*0.42,300)
 d.rectangle((0,H-14,W,H),fill=LIGHT)
-ctext(d,H*0.75,TITLE,font('Bold',64),DARK)
+if VERT:
+    l1,l2=TITLE.rsplit(' вече ',1) if ' вече ' in TITLE else (TITLE,'')
+    ctext(d,H*0.60,l1,font('Bold',72),DARK); ctext(d,H*0.60+95,'вече '+l2 if l2 else '',font('Bold',72),DARK)
+else: ctext(d,H*0.75,TITLE,font('Bold',64),DARK)
 im.convert('RGB').save(f'{S}/intro.png')
 # end card: dark teal background
 im=Image.new('RGBA',(W,H),DARK); d=ImageDraw.Draw(im)
@@ -31,12 +38,21 @@ if rd:
     place(im,white,810,H*0.26,180)
     d.line((1091,H*0.26-80,1091,H*0.26+80),fill=LIGHT,width=4)
     place(im,whiten(rd),1241,H*0.26,180)
+elif VERT: place(im,white,W/2,H*0.25,240)
 else: place(im,white,W/2,H*0.24,200)
-ctext(d,H*0.40,TITLE,font('Bold',76),'white')
-ctext(d,H*0.52,'smr-academy',font('Bold',100),'white')
-d.rounded_rectangle((W/2-380,H*0.70,W/2+380,H*0.70+120),60,fill=LIGHT)
-ctext(d,H*0.70+18,'0893 370 404',font('Bold',72),'white')
+if VERT:
+    l1,l2=TITLE.rsplit(' вече ',1) if ' вече ' in TITLE else (TITLE,'')
+    ctext(d,H*0.40,l1,font('Bold',76),'white'); ctext(d,H*0.40+100,'вече '+l2 if l2 else '',font('Bold',76),'white')
+    ctext(d,H*0.56,'smr-academy',font('Bold',100),'white')
+    d.rounded_rectangle((W/2-380,H*0.70,W/2+380,H*0.70+120),60,fill=LIGHT)
+    ctext(d,H*0.70+18,'0893 370 404',font('Bold',72),'white')
+else:
+    ctext(d,H*0.40,TITLE,font('Bold',76),'white')
+    ctext(d,H*0.52,'smr-academy',font('Bold',100),'white')
+    d.rounded_rectangle((W/2-380,H*0.70,W/2+380,H*0.70+120),60,fill=LIGHT)
+    ctext(d,H*0.70+18,'0893 370 404',font('Bold',72),'white')
 im.convert('RGB').save(f'{S}/end.png')
+if VERT: sys.exit()
 # subtitle sample on gray frame
 im=Image.new('RGBA',(W,H),(110,110,110)); ov=Image.new('RGBA',(W,H),(0,0,0,0)); d=ImageDraw.Draw(ov)
 f=font('SemiBold',54); t='Ако хидроизолацията не е положена правилно...'
