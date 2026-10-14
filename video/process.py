@@ -39,6 +39,8 @@ def read_srt(p):
 if os.environ.get('SUBS'):
     segs = list(read_srt(os.environ['SUBS']))
 else:
+    # huggingface.co е блокиран в облачната среда, затова моделът се тегли от огледалото
+    os.environ.setdefault('HF_ENDPOINT', 'https://hf-mirror.com')
     from faster_whisper import WhisperModel
     model = WhisperModel(os.environ.get('WHISPER_MODEL', 'medium'), compute_type='int8')
     segs, _ = model.transcribe(fast, language='bg', vad_filter=True)
