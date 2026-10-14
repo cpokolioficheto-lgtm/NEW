@@ -1,76 +1,93 @@
-"""Забързва видео, добавя логото на ЦПО и субтитри (стил като в cards.py).
+"""Субтитри + лого на ЦПО + забързване, в стила на „Мокри помещения“.
 
-Употреба: [SUBS=субтитри.srt] [CARDS=папка] python3 process.py вход.mp4 изход.mp4 [скорост=1.25] [logo-cpo.png]
+Употреба: [ASS=субтитри.ass | SUBS=субтитри.srt] [CARDS=папка] [LOGO_HUE=330] [LOGO_SIDE=right]
+          python3 process.py вход.mp4 изход.mp4 [скорост=1.1] [logo-cpo.png]
+
+Субтитрите се изгарят върху оригиналния клип (таймингите са спрямо него), после се забързва.
+Без ASS/SUBS говорът се разпознава автоматично (faster-whisper, български).
 """
-import os, subprocess, sys, tempfile, json
+import colorsys, json, os, subprocess, sys, tempfile
+import numpy as np
 from PIL import Image
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 src, out = sys.argv[1], sys.argv[2]
-speed = float(sys.argv[3]) if len(sys.argv) > 3 else 1.25
-logo_path = sys.argv[4] if len(sys.argv) > 4 else os.path.join(os.path.dirname(__file__), 'logo-cpo.png')
+speed = float(sys.argv[3]) if len(sys.argv) > 3 else 1.1
+logo_path = sys.argv[4] if len(sys.argv) > 4 else os.path.join(HERE, 'logo-cpo.png')
 tmp = tempfile.mkdtemp()
 
 def run(*a): subprocess.run(a, check=True)
 
 info = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-select_streams', 'v:0',
     '-show_entries', 'stream=width,height', '-of', 'json', src]))['streams'][0]
-W, H = info['width'], info['height']; k = min(W, H) / 1080; VERT = H > W
+W, H = info['width'], info['height']; k = W / 1080
 
-# бяло лого (както на крайния кадър), височина 80px при 1080p
+# лого: оригиналните цветове, или с друг нюанс (LOGO_HUE в градуси, 330 = циклама)
 lg = Image.open(logo_path).convert('RGBA'); lg = lg.crop(lg.getbbox())
-w = Image.new('RGBA', lg.size, (255, 255, 255, 0)); w.putalpha(lg.getchannel('A'))
-lh = int((90 if VERT else 80) * k); w = w.resize((int(lg.width * lh / lg.height), lh), Image.LANCZOS)
-w.save(f'{tmp}/logo.png')
+hue = os.environ.get('LOGO_HUE')
+if hue:
+    a = np.asarray(lg).astype(float) / 255
+    hsv = np.array([colorsys.rgb_to_hsv(*p) for p in a[..., :3].reshape(-1, 3)])
+    hsv[:, 0] = float(hue) / 360; hsv[:, 1] = np.maximum(hsv[:, 1], 0.85); hsv[:, 2] = 0.6 + 0.4 * hsv[:, 2]
+    rgb = np.array([colorsys.hsv_to_rgb(*p) for p in hsv]).reshape(a.shape[:2] + (3,))
+    lg = Image.fromarray((np.dstack([rgb, a[..., 3]]) * 255).astype(np.uint8), 'RGBA')
+lw = int(400 * k); lg = lg.resize((lw, int(lg.height * lw / lg.width)), Image.LANCZOS)
+lg.save(f'{tmp}/logo.png')
+lx = W - int(50 * k) - lw if os.environ.get('LOGO_SIDE', 'right') == 'right' else int(50 * k)
+ly = int(110 * k)
 
-# 1) забързване
-fast = f'{tmp}/fast.mp4'
-run('ffmpeg', '-y', '-v', 'error', '-i', src, '-filter_complex',
-    f'[0:v]setpts=PTS/{speed}[v];[0:a]atempo={speed}[a]', '-map', '[v]', '-map', '[a]',
-    '-c:v', 'libx264', '-crf', '18', '-c:a', 'aac', fast)
+# субтитри
+HEAD = f'''[Script Info]
+ScriptType: v4.00+
+PlayResX: {W}
+PlayResY: {H}
+WrapStyle: 2
+ScaledBorderAndShadow: yes
 
-# 2) субтитри: готов .srt (SUBS=файл.srt, времената за оригиналната скорост) или разпознаване на говора
-class Seg:
-    def __init__(s, a, b, t): s.start, s.end, s.text = a, b, t
-def read_srt(p):
-    def sec(x): h, m, r = x.strip().replace(',', '.').split(':'); return int(h) * 3600 + int(m) * 60 + float(r)
-    for b in open(p, encoding='utf-8-sig').read().strip().split('\n\n'):
-        l = b.strip().splitlines(); a, z = l[1].split('-->')
-        yield Seg(sec(a) / speed, sec(z) / speed, ' '.join(l[2:]))
-if os.environ.get('SUBS'):
-    segs = list(read_srt(os.environ['SUBS']))
-else:
-    # huggingface.co е блокиран в облачната среда, затова моделът се тегли от огледалото
-    os.environ.setdefault('HF_ENDPOINT', 'https://hf-mirror.com')
-    from faster_whisper import WhisperModel
-    model = WhisperModel(os.environ.get('WHISPER_MODEL', 'medium'), compute_type='int8')
-    import numpy as np  # звукът се подава като масив (PyAV в средата е несъвместим)
-    raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', fast, '-ac', '1', '-ar', '16000', '-f', 's16le', '-'])
-    segs, _ = model.transcribe(np.frombuffer(raw, np.int16).astype(np.float32) / 32768, language='bg', vad_filter=True)
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Sub,Oswald,96,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,6,3,2,70,70,500,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+'''
+POP = '{\\fscx85\\fscy85\\t(0,140,\\fscx100\\fscy100)}'
 
 def ts(t):
     h, m = divmod(t, 3600); m, s = divmod(m, 60); return f'{int(h)}:{int(m):02d}:{s:05.2f}'
 
-# стил като „Мокри помещения“: бял Inter Bold с черен контур, без фон
-fs = int((66 if VERT else 54) * k); mv = int(H * 0.2) if VERT else int(125 * k)  # вертикално: над бутоните на Reels/TikTok
-ass = [f'[Script Info]\nScriptType: v4.00+\nPlayResX: {W}\nPlayResY: {H}\n\n[V4+ Styles]',
-       'Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV',
-       f'Style: Default,Inter,{fs},&H00FFFFFF,&H00000000,&H80000000,-1,1,{max(4, int(5*k))},{int(2*k)},2,{int(60*k)},{int(60*k)},{mv}',
-       '\n[Events]\nFormat: Layer, Start, End, Style, Text']
-srt = []
-for i, s in enumerate(segs, 1):
-    t = s.text.strip()
-    ass.append(f'Dialogue: 0,{ts(s.start)},{ts(s.end)},Default,{t}')
-    srt.append(f'{i}\n{ts(s.start).replace(".", ",")}0 --> {ts(s.end).replace(".", ",")}0\n{t}\n')
-open(f'{tmp}/subs.ass', 'w').write('\n'.join(ass) + '\n')
-open(os.path.splitext(out)[0] + '.srt', 'w').write('\n'.join(srt))
+def segments():
+    if os.environ.get('SUBS'):
+        def sec(x): h, m, r = x.strip().replace(',', '.').split(':'); return int(h) * 3600 + int(m) * 60 + float(r)
+        for b in open(os.environ['SUBS'], encoding='utf-8-sig').read().strip().split('\n\n'):
+            l = b.strip().splitlines(); a, z = l[1].split('-->')
+            yield sec(a), sec(z), ' '.join(l[2:])
+        return
+    # huggingface.co е блокиран в облачната среда, затова моделът се тегли от огледалото
+    os.environ.setdefault('HF_ENDPOINT', 'https://hf-mirror.com')
+    from faster_whisper import WhisperModel
+    model = WhisperModel(os.environ.get('WHISPER_MODEL', 'medium'), compute_type='int8')
+    # звукът се подава като масив (PyAV в средата е несъвместим)
+    raw = subprocess.check_output(['ffmpeg', '-v', 'error', '-i', src, '-ac', '1', '-ar', '16000', '-f', 's16le', '-'])
+    segs, _ = model.transcribe(np.frombuffer(raw, np.int16).astype(np.float32) / 32768, language='bg', vad_filter=True)
+    for s in segs: yield s.start, s.end, s.text.strip()
 
-# 3) лого горе вдясно + субтитри
-x, y = int(W - 50 * k - w.width), int((150 if VERT else 50) * k)
-run('ffmpeg', '-y', '-v', 'error', '-i', fast, '-i', f'{tmp}/logo.png', '-filter_complex',
-    f'[0:v][1:v]overlay={x}:{y},subtitles={tmp}/subs.ass:fontsdir=/usr/share/fonts/opentype/inter[v]',
-    '-map', '[v]', '-map', '0:a', '-c:v', 'libx264', '-crf', '18', '-c:a', 'copy', f'{tmp}/main.mp4')
+ass = os.environ.get('ASS')
+if not ass:
+    ass = f'{tmp}/subs.ass'
+    with open(ass, 'w', encoding='utf-8') as f:
+        f.write(HEAD)
+        for a, z, t in segments():
+            f.write(f'Dialogue: 0,{ts(a)},{ts(z)},Sub,,0,0,0,,{POP}{t.upper()}\n')
 
-# 4) начален (3 с) и финален (4 с) кадър от cards.py, ако CARDS=папка с intro.png и end.png
+# лого + субтитри върху оригинала, после забързване
+fonts = os.path.join(HERE, 'fonts')
+run('ffmpeg', '-y', '-v', 'error', '-i', src, '-i', f'{tmp}/logo.png', '-filter_complex',
+    f'[0:v]setsar=1,subtitles={ass}:fontsdir={fonts}[s];[1:v]format=rgba,colorchannelmixer=aa=0.95[w];'
+    f'[s][w]overlay={lx}:{ly},setpts=PTS/{speed}[v];[0:a]atempo={speed}[a]',
+    '-map', '[v]', '-map', '[a]', '-c:v', 'libx264', '-crf', '18', '-c:a', 'aac', f'{tmp}/main.mp4')
+
+# начален (3 с) и финален (4 с) кадър от cards.py, ако CARDS=папка с intro.png и end.png
 cards = os.environ.get('CARDS')
 if not cards:
     os.replace(f'{tmp}/main.mp4', out)
