@@ -1,7 +1,9 @@
 import sys
 from PIL import Image, ImageDraw, ImageFont
 S=sys.argv[1]; logo=Image.open(sys.argv[2]).convert('RGBA')
-rd=Image.open(sys.argv[3]).convert('RGBA'); rd=rd.crop(rd.getbbox())
+# втори аргумент '-' = без логото на Роден Дом
+rd=None if sys.argv[3]=='-' else Image.open(sys.argv[3]).convert('RGBA')
+if rd: rd=rd.crop(rd.getbbox())
 TITLE=sys.argv[4] if len(sys.argv)>4 else 'ЦПО Кольо Фичето вече и в София!'
 def whiten(l):
     w=Image.new('RGBA',l.size,(255,255,255,0)); w.putalpha(l.getchannel('A')); return w
@@ -14,18 +16,22 @@ def place(img,lg,cx,cy,h):
     l=lg.resize((int(lg.width*h/lg.height),h),Image.LANCZOS); img.alpha_composite(l,(int(cx-l.width/2),int(cy-l.height/2)))
 # intro: white, logo + placeholder for Rodendom logo
 im=Image.new('RGBA',(W,H),'white'); d=ImageDraw.Draw(im)
-place(im,logo,750,H*0.42,260)
-d.line((1149,H*0.42-120,1149,H*0.42+120),fill=LIGHT,width=4)
-place(im,rd,1359,H*0.42,260)
+if rd:
+    place(im,logo,750,H*0.42,260)
+    d.line((1149,H*0.42-120,1149,H*0.42+120),fill=LIGHT,width=4)
+    place(im,rd,1359,H*0.42,260)
+else: place(im,logo,W/2,H*0.42,300)
 d.rectangle((0,H-14,W,H),fill=LIGHT)
 ctext(d,H*0.75,TITLE,font('Bold',64),DARK)
 im.convert('RGB').save(f'{S}/intro.png')
 # end card: dark teal background
 im=Image.new('RGBA',(W,H),DARK); d=ImageDraw.Draw(im)
 white=whiten(logo)
-place(im,white,810,H*0.26,180)
-d.line((1091,H*0.26-80,1091,H*0.26+80),fill=LIGHT,width=4)
-place(im,whiten(rd),1241,H*0.26,180)
+if rd:
+    place(im,white,810,H*0.26,180)
+    d.line((1091,H*0.26-80,1091,H*0.26+80),fill=LIGHT,width=4)
+    place(im,whiten(rd),1241,H*0.26,180)
+else: place(im,white,W/2,H*0.24,200)
 ctext(d,H*0.40,TITLE,font('Bold',76),'white')
 ctext(d,H*0.52,'smr-academy',font('Bold',100),'white')
 d.rounded_rectangle((W/2-380,H*0.70,W/2+380,H*0.70+120),60,fill=LIGHT)
