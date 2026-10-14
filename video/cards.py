@@ -2,6 +2,7 @@ import sys
 from PIL import Image, ImageDraw, ImageFont
 S=sys.argv[1]; logo=Image.open(sys.argv[2]).convert('RGBA')
 rd=Image.open(sys.argv[3]).convert('RGBA'); rd=rd.crop(rd.getbbox())
+TITLE=sys.argv[4] if len(sys.argv)>4 else 'ЦПО Кольо Фичето вече и в София!'
 def whiten(l):
     w=Image.new('RGBA',l.size,(255,255,255,0)); w.putalpha(l.getchannel('A')); return w
 DARK=(19,116,118); LIGHT=(28,181,181); W,H=1920,1080
@@ -17,7 +18,7 @@ place(im,logo,750,H*0.42,260)
 d.line((1149,H*0.42-120,1149,H*0.42+120),fill=LIGHT,width=4)
 place(im,rd,1359,H*0.42,260)
 d.rectangle((0,H-14,W,H),fill=LIGHT)
-ctext(d,H*0.75,'Мокри помещения — критични ситуации',font('Bold',64),DARK)
+ctext(d,H*0.75,TITLE,font('Bold',64),DARK)
 im.convert('RGB').save(f'{S}/intro.png')
 # end card: dark teal background
 im=Image.new('RGBA',(W,H),DARK); d=ImageDraw.Draw(im)
@@ -25,7 +26,8 @@ white=whiten(logo)
 place(im,white,810,H*0.26,180)
 d.line((1091,H*0.26-80,1091,H*0.26+80),fill=LIGHT,width=4)
 place(im,whiten(rd),1241,H*0.26,180)
-ctext(d,H*0.50,'smr-academy',font('Bold',110),'white')
+ctext(d,H*0.40,TITLE,font('Bold',76),'white')
+ctext(d,H*0.52,'smr-academy',font('Bold',100),'white')
 d.rounded_rectangle((W/2-380,H*0.70,W/2+380,H*0.70+120),60,fill=LIGHT)
 ctext(d,H*0.70+18,'0893 370 404',font('Bold',72),'white')
 im.convert('RGB').save(f'{S}/end.png')
