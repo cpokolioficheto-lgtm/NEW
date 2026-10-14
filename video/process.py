@@ -50,11 +50,11 @@ else:
 def ts(t):
     h, m = divmod(t, 3600); m, s = divmod(m, 60); return f'{int(h)}:{int(m):02d}:{s:05.2f}'
 
-# стил: бял Inter SemiBold 54, полупрозрачна черна кутия долу в центъра
+# стил като „Мокри помещения“: бял Inter Bold с черен контур, без фон
 fs = int((66 if VERT else 54) * k); mv = int(H * 0.2) if VERT else int(125 * k)  # вертикално: над бутоните на Reels/TikTok
 ass = [f'[Script Info]\nScriptType: v4.00+\nPlayResX: {W}\nPlayResY: {H}\n\n[V4+ Styles]',
        'Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV',
-       f'Style: Default,Inter SemiBold,{fs},&H00FFFFFF,&H69000000,&H69000000,0,3,{int(14*k)},0,2,{int(60*k)},{int(60*k)},{mv}',
+       f'Style: Default,Inter,{fs},&H00FFFFFF,&H00000000,&H80000000,-1,1,{max(4, int(5*k))},{int(2*k)},2,{int(60*k)},{int(60*k)},{mv}',
        '\n[Events]\nFormat: Layer, Start, End, Style, Text']
 srt = []
 for i, s in enumerate(segs, 1):
