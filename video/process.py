@@ -1,6 +1,6 @@
 """Субтитри + лого на ЦПО + забързване, в стила на „Мокри помещения“.
 
-Употреба: [ASS=субтитри.ass | SUBS=субтитри.srt] [CARDS=папка] [LOGO_HUE=330] [LOGO_SIDE=right]
+Употреба: [ASS=субтитри.ass | SUBS=субтитри.srt] [CARDS=папка] [LOGO_HUE=330 | LOGO_COLOR=1CB5B5] [LOGO_SIDE=right|left]
           python3 process.py вход.mp4 изход.mp4 [скорост=1.1] [logo-cpo.png]
 
 Субтитрите се изгарят върху оригиналния клип (таймингите са спрямо него), после се забързва.
@@ -31,6 +31,11 @@ if hue:
     hsv[:, 0] = float(hue) / 360; hsv[:, 1] = np.maximum(hsv[:, 1], 0.85); hsv[:, 2] = 0.6 + 0.4 * hsv[:, 2]
     rgb = np.array([colorsys.hsv_to_rgb(*p) for p in hsv]).reshape(a.shape[:2] + (3,))
     lg = Image.fromarray((np.dstack([rgb, a[..., 3]]) * 255).astype(np.uint8), 'RGBA')
+col = os.environ.get('LOGO_COLOR')  # цялото лого в един цвят, напр. 1CB5B5 (акцентите в субтитрите)
+if col:
+    a = np.asarray(lg).astype(float)
+    a[..., :3] = [int(col[i:i + 2], 16) for i in (0, 2, 4)]
+    lg = Image.fromarray(a.astype(np.uint8), 'RGBA')
 lw = int(400 * k); lg = lg.resize((lw, int(lg.height * lw / lg.width)), Image.LANCZOS)
 lg.save(f'{tmp}/logo.png')
 lx = W - int(50 * k) - lw if os.environ.get('LOGO_SIDE', 'right') == 'right' else int(50 * k)
