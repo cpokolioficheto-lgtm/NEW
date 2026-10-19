@@ -13,7 +13,7 @@
  */
 
 var SHEET = 'Финални Резултати';
-var FIRST_ROW = 3;   // първи ред с курсист
+var FIRST_ROW = 15;  // редовете преди 15 са по стария стандарт
 var EMAIL_COL = 7;   // G
 // Колони H..Y → ключ в метаданните на Memberstack
 var KEYS = [
