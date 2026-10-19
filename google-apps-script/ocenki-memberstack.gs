@@ -23,6 +23,8 @@ var KEYS = [
   'st_trd', 'st_ims', 'st_ee', 'st_gi', 'st_zemni-raboti', 'st_organizaciq-rp'
 ];
 var PASS = 60;
+// Курсисти, които скриптът не пипа (стар стандарт / въведени ръчно)
+var SKIP = ['kanq.simeonova94@gmail.com', 'stoyanpenev@gmail.com', 'imo.hristov@gmail.com'];
 var API = 'https://admin.memberstack.com/members/';
 
 function setup() {
@@ -47,7 +49,7 @@ function run_(dry) {
 
   rows.forEach(function (r) {
     var email = String(r[0] || '').trim().toLowerCase();
-    if (!email || email.indexOf('@') < 0) return;
+    if (!email || email.indexOf('@') < 0 || SKIP.indexOf(email) >= 0) return;
     var want = {};
     KEYS.forEach(function (k, i) {
       var v = Number(r[i + 1]);
