@@ -3,10 +3,10 @@
 #cpo-help.open{display:flex}
 #cpo-help .ch-box{background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:92vh;overflow:auto;padding:28px 24px 22px;position:relative;font-family:inherit;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 #cpo-help .ch-x{position:absolute;top:10px;right:14px;border:0;background:none;font-size:28px;line-height:1;cursor:pointer;color:#555}
-#cpo-help h3{margin:0 0 6px;font-size:22px;color:#137476}
-#cpo-help p{margin:0 0 14px;font-size:15px;color:#333}
+#cpo-help h3{margin:0 0 14px;font-size:22px;color:#137476}
+#cpo-help p{margin:4px 0 12px;font-size:15px;color:#333}
 #cpo-help input,#cpo-help textarea{width:100%;box-sizing:border-box;border:1px solid #cfd8d8;border-radius:8px;padding:10px 12px;margin:0 0 10px;font-size:15px;font-family:inherit}
-#cpo-help textarea{min-height:70px;resize:vertical}
+#cpo-help textarea{min-height:46px;resize:vertical}
 #cpo-help .ch-gdpr{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#444;margin:2px 0 12px}
 #cpo-help .ch-gdpr input{width:auto;margin:3px 0 0}
 #cpo-help .ch-send{width:100%;border:0;border-radius:999px;background:#0ca36b;color:#fff;font-size:16px;padding:12px;cursor:pointer}
@@ -23,14 +23,14 @@
   <div class="ch-box">
     <button type="button" class="ch-x" aria-label="Затвори">&times;</button>
     <h3 id="ch-title">Имате нужда от помощ?</h3>
-    <p>Не сте сигурни кой курс е подходящ за вас? Оставете ни данните си и наш консултант ще се свърже с вас.</p>
     <div class="w-form">
       <form id="cpo-help-form" name="cpo-help-form" data-name="Контактна форма" method="get">
+        <textarea name="Съобщение" data-name="Съобщение" placeholder="Въведете курс" maxlength="1000"></textarea>
+        <div class="ch-sug"><b>Може да ви заинтересува:</b><div class="ch-sug-list"></div></div>
+        <p>Не сте сигурни кой курс е подходящ за вас? Оставете ни данните си и наш консултант ще се свърже с вас.</p>
         <input type="text" name="Собствено име" data-name="Собствено име" placeholder="Име и фамилия *" required maxlength="100">
         <input type="tel" name="Телефон" data-name="Телефон" placeholder="Телефон *" required maxlength="30">
         <input type="email" name="Имейл Адрес" data-name="Имейл Адрес" placeholder="Имейл *" required maxlength="120">
-        <textarea name="Съобщение" data-name="Съобщение" placeholder="Кой курс ви интересува / вашият въпрос" maxlength="1000"></textarea>
-        <div class="ch-sug"><b>Може да ви заинтересува:</b><div class="ch-sug-list"></div></div>
         <input type="hidden" name="Страница" data-name="Страница" class="ch-page">
         <label class="ch-gdpr"><input type="checkbox" name="Приемам политиката за поверителност" data-name="Приемам политиката за поверителност" required> <span>Съгласен/на съм с <a href="/politika-za-poveritelnost" target="_blank">Политиката за поверителност</a> *</span></label>
         <input type="submit" class="ch-send" value="Изпрати" data-wait="Изпращане...">
