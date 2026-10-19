@@ -124,6 +124,6 @@
     if (cb && cb.getBoundingClientRect().height > 0 && getComputedStyle(cb).display !== 'none') { setTimeout(tryOpen, 1000); return; }
     box.classList.add('open');
   }
-  if (!seen()) setTimeout(tryOpen, 5000);
+  if (!seen()) setTimeout(tryOpen, 3000);
 })();
 </script>
