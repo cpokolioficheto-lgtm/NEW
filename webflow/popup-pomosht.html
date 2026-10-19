@@ -1,0 +1,56 @@
+<style>
+#cpo-help{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);padding:16px}
+#cpo-help.open{display:flex}
+#cpo-help .ch-box{background:#fff;border-radius:16px;max-width:440px;width:100%;max-height:92vh;overflow:auto;padding:28px 24px 22px;position:relative;font-family:inherit;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+#cpo-help .ch-x{position:absolute;top:10px;right:14px;border:0;background:none;font-size:28px;line-height:1;cursor:pointer;color:#555}
+#cpo-help h3{margin:0 0 6px;font-size:22px;color:#137476}
+#cpo-help p{margin:0 0 14px;font-size:15px;color:#333}
+#cpo-help input,#cpo-help textarea{width:100%;box-sizing:border-box;border:1px solid #cfd8d8;border-radius:8px;padding:10px 12px;margin:0 0 10px;font-size:15px;font-family:inherit}
+#cpo-help textarea{min-height:70px;resize:vertical}
+#cpo-help .ch-gdpr{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#444;margin:2px 0 12px}
+#cpo-help .ch-gdpr input{width:auto;margin:3px 0 0}
+#cpo-help .ch-send{width:100%;border:0;border-radius:999px;background:#0ca36b;color:#fff;font-size:16px;padding:12px;cursor:pointer}
+#cpo-help .ch-call{display:block;text-align:center;margin-top:12px;color:#137476;font-weight:600;text-decoration:none}
+#cpo-help .w-form-done,#cpo-help .w-form-fail{display:none;padding:12px;border-radius:8px;font-size:15px}
+#cpo-help .w-form-done{background:#e6f6ef;color:#0b6b47}
+#cpo-help .w-form-fail{background:#fdecec;color:#a12}
+</style>
+<div id="cpo-help" role="dialog" aria-modal="true" aria-labelledby="ch-title">
+  <div class="ch-box">
+    <button type="button" class="ch-x" aria-label="Затвори">&times;</button>
+    <h3 id="ch-title">Имате нужда от помощ?</h3>
+    <p>Не сте сигурни кой курс е подходящ за вас? Оставете ни данните си и наш консултант ще се свърже с вас.</p>
+    <div class="w-form">
+      <form id="cpo-help-form" name="cpo-help-form" data-name="Заявка за помощ" method="get">
+        <input type="text" name="Име" data-name="Име" placeholder="Име и фамилия *" required maxlength="100">
+        <input type="tel" name="Телефон" data-name="Телефон" placeholder="Телефон *" required maxlength="30">
+        <input type="email" name="Имейл" data-name="Имейл" placeholder="Имейл *" required maxlength="120">
+        <textarea name="Въпрос" data-name="Въпрос" placeholder="Кой курс ви интересува / вашият въпрос" maxlength="1000"></textarea>
+        <input type="hidden" name="Страница" data-name="Страница" class="ch-page">
+        <label class="ch-gdpr"><input type="checkbox" name="Съгласие" data-name="Съгласие" required> <span>Съгласен/на съм с <a href="/politika-za-poveritelnost" target="_blank">Политиката за поверителност</a> *</span></label>
+        <input type="submit" class="ch-send" value="Изпрати" data-wait="Изпращане...">
+      </form>
+      <div class="w-form-done">Благодарим! Ще се свържем с вас възможно най-скоро.</div>
+      <div class="w-form-fail">Възникна грешка. Моля, обадете ни се на +359 89 451 1093.</div>
+    </div>
+    <a class="ch-call" href="tel:+359894511093">📞 Или се обадете: +359 89 451 1093</a>
+  </div>
+</div>
+<script>
+(function () {
+  var p = location.pathname;
+  if (/^\/(payment-success|access-denied|sign-in|sign-up|dashboard)/.test(p)) return;
+  var box = document.getElementById('cpo-help');
+  if (!box) return;
+  var KEY = 'cpoHelpSeen';
+  function seen() { try { return sessionStorage.getItem(KEY); } catch (e) { return null; } }
+  function mark() { try { sessionStorage.setItem(KEY, '1'); } catch (e) {} }
+  function close() { box.classList.remove('open'); mark(); }
+  var pg = box.querySelector('.ch-page'); if (pg) pg.value = location.href;
+  box.querySelector('.ch-x').addEventListener('click', close);
+  box.addEventListener('click', function (e) { if (e.target === box) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  box.querySelector('form').addEventListener('submit', mark);
+  if (!seen()) setTimeout(function () { if (!seen()) box.classList.add('open'); }, 5000);
+})();
+</script>
