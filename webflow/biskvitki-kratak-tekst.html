@@ -1,0 +1,10 @@
+<script>
+(function () {
+  var TXT = 'Използваме бисквитки, за да работи сайтът правилно и да подобряваме услугите си.';
+  var n = 0, t = setInterval(function () {
+    var el = document.querySelector('#termsfeed-com---nb .cc-nb-text');
+    if (el) { el.textContent = TXT; clearInterval(t); }
+    else if (++n > 50) clearInterval(t);
+  }, 100);
+})();
+</script>
