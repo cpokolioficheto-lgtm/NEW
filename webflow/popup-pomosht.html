@@ -14,6 +14,10 @@
 #cpo-help .w-form-done,#cpo-help .w-form-fail{display:none;padding:12px;border-radius:8px;font-size:15px}
 #cpo-help .w-form-done{background:#e6f6ef;color:#0b6b47}
 #cpo-help .w-form-fail{background:#fdecec;color:#a12}
+#cpo-help .ch-sug{display:none;margin:-4px 0 12px;padding:10px 12px;background:#eef7f4;border-radius:8px;font-size:14px}
+#cpo-help .ch-sug b{display:block;margin-bottom:4px;color:#137476}
+#cpo-help .ch-sug a{display:block;color:#0b6b47;text-decoration:none;padding:3px 0}
+#cpo-help .ch-sug a:hover{text-decoration:underline}
 </style>
 <div id="cpo-help" role="dialog" aria-modal="true" aria-labelledby="ch-title">
   <div class="ch-box">
@@ -21,19 +25,20 @@
     <h3 id="ch-title">Имате нужда от помощ?</h3>
     <p>Не сте сигурни кой курс е подходящ за вас? Оставете ни данните си и наш консултант ще се свърже с вас.</p>
     <div class="w-form">
-      <form id="cpo-help-form" name="cpo-help-form" data-name="Заявка за помощ" method="get">
-        <input type="text" name="Име" data-name="Име" placeholder="Име и фамилия *" required maxlength="100">
+      <form id="cpo-help-form" name="cpo-help-form" data-name="Контактна форма" method="get">
+        <input type="text" name="Собствено име" data-name="Собствено име" placeholder="Име и фамилия *" required maxlength="100">
         <input type="tel" name="Телефон" data-name="Телефон" placeholder="Телефон *" required maxlength="30">
-        <input type="email" name="Имейл" data-name="Имейл" placeholder="Имейл *" required maxlength="120">
-        <textarea name="Въпрос" data-name="Въпрос" placeholder="Кой курс ви интересува / вашият въпрос" maxlength="1000"></textarea>
+        <input type="email" name="Имейл Адрес" data-name="Имейл Адрес" placeholder="Имейл *" required maxlength="120">
+        <textarea name="Съобщение" data-name="Съобщение" placeholder="Кой курс ви интересува / вашият въпрос" maxlength="1000"></textarea>
+        <div class="ch-sug"><b>Може да ви заинтересува:</b><div class="ch-sug-list"></div></div>
         <input type="hidden" name="Страница" data-name="Страница" class="ch-page">
-        <label class="ch-gdpr"><input type="checkbox" name="Съгласие" data-name="Съгласие" required> <span>Съгласен/на съм с <a href="/politika-za-poveritelnost" target="_blank">Политиката за поверителност</a> *</span></label>
+        <label class="ch-gdpr"><input type="checkbox" name="Приемам политиката за поверителност" data-name="Приемам политиката за поверителност" required> <span>Съгласен/на съм с <a href="/politika-za-poveritelnost" target="_blank">Политиката за поверителност</a> *</span></label>
         <input type="submit" class="ch-send" value="Изпрати" data-wait="Изпращане...">
       </form>
       <div class="w-form-done">Благодарим! Ще се свържем с вас възможно най-скоро.</div>
-      <div class="w-form-fail">Възникна грешка. Моля, обадете ни се на +359 89 451 1093.</div>
+      <div class="w-form-fail">Възникна грешка. Моля, обадете ни се на 0893 37 04 04.</div>
     </div>
-    <a class="ch-call" href="tel:+359894511093">📞 Или се обадете: +359 89 451 1093</a>
+    <a class="ch-call" href="tel:+359893370404">📞 Или се обадете: 0893 37 04 04</a>
   </div>
 </div>
 <script>
@@ -51,6 +56,68 @@
   box.addEventListener('click', function (e) { if (e.target === box) close(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   box.querySelector('form').addEventListener('submit', mark);
+  var C = [
+    ['микроцимент', 'Микроцимент (онлайн)', 'mikrociment'],
+    ['микроцимент', 'Микроцимент (присъствен)', 'prisystven-kurs-dekorativni-mazilki-mikrociment'],
+    ['травертин', 'Травертин (онлайн)', 'travertin'],
+    ['травертин', 'Травертин (присъствен)', 'prisystven-kurs-po-dekorativna-mazilka-travertin'],
+    ['дюн|антико', 'Дюн и Антико (онлайн)', 'dekorativna-mazilka-dune-i-antiko-kurs'],
+    ['дюн|антико', 'Дюн и Антико (присъствен)', 'prisystven-kurs-po-dekorativni-mazilki-dyun-i-antiko'],
+    ['венецианск', 'Венецианска мазилка (онлайн)', 'dekorativna-mazilka-venecianska-mazilka'],
+    ['венецианск', 'Венецианска мазилка (присъствен)', 'prisystven-kurs-venecianska-mazilka'],
+    ['килим|флейк|подов', 'Каменен килим и флейк (онлайн)', 'dekorativni-podovi-sistemi-kamenen-kilim-i-fleyk'],
+    ['килим|флейк|подов', 'Каменен килим и флейк (присъствен)', 'prisystven-kurs-po-dekorativni-podovi-sistemi-kamenen-kilim-i-fleyk'],
+    ['мазилк|декоратив', 'Декоративни мазилки – всички курсове', ''],
+    ['боядис|бояд|боя', 'Машинно боядисване (онлайн)', 'mashinno-boqdisvane'],
+    ['боядис|бояд|боя', 'Машинно боядисване (присъствен)', 'prisystven-kurs-mashinno-boyadisvane'],
+    ['сухо|гипсокартон|гипс', 'Сухо строителство (онлайн)', 'suho-stroitelstvo'],
+    ['сухо|гипсокартон|гипс', 'Сухо строителство (присъствен)', 'prisystven-kurs-po-suho-stroitelstvo'],
+    ['топлоизол|фасад|саниран', 'Топлоизолационни системи (онлайн)', 'toploizolacionni-sistemi'],
+    ['топлоизол|фасад|саниран', 'Топлоизолация на фасадни стени (присъствен)', 'prisystven-kurs-toploizolaciya-na-fasadni-steni'],
+    ['збут|безопасност|длъжностно', 'Длъжностно лице по ЗБУТ', 'dlyzhnostno-lice-po-zbut-v-stroitelstvoto'],
+    ['техник|квалификац|свидетелство|напоо', 'Строителен техник', 'stroitelen-tehnik'],
+    ['интериор|екстериор|дизайн', 'Интериорен и екстериорен дизайнер – пълна професия', 'profesionalen-kurs-za-interioren-i-eksterioren-dizayner-palna-profesiya'],
+    ['интериор|дизайн', 'Ускорен курс по интериорен дизайн', 'prisystven-uskoren-kurs-po-interioren-dizayn'],
+    ['autocad|автокад|аутокад|чертеж|чертане|cad', 'AutoCAD', 'prisystven-kurs-po-autocad'],
+    ['армировк|бетон|армиров', 'Армировка и бетон', 'prisystven-kurs-armirovka-i-beton'],
+    ['кофраж', 'Кофражи', 'prisystven-kurs-kofrazhi'],
+    ['хидроизол|битум|мембран', 'Хидроизолация с битумна мембрана', 'prisystven-kurs-hidroizolaciya-s-bitumna-membrana'],
+    ['хидроизол|пвц|pvc|мембран', 'Хидроизолация с ПВЦ мембрана', 'prisystven-kurs-hidroizolaciya-s-pvc-membrana'],
+    ['метал|заварк|заварчик', 'Метални конструкции', 'prisystven-kurs-metalni-konstrukcii'],
+    ['камен|камък|зидар', 'Каменна зидария', 'prisystven-kurs-po-kamenna-zidariya'],
+    ['тухл|зидар', 'Тухлена зидария', 'prisystven-kurs-po-tuhlena-zidariya'],
+    ['покрив|керемид|битумни керемиди', 'Покриви с битумни керемиди', 'prisystven-kurs-pokrivi-s-bitumni-keremidi'],
+    ['облицов|настил|плочк|фаянс|гранитогрес', 'Вътрешни облицовки и настилки', 'prisystven-kurs-vtreshni-oblicovki-i-nastilki'],
+    ['облицов|настил|плочк|паваж', 'Външни облицовки и настилки', 'prisystven-kurs-vnshni-oblicovki-i-nastilki'],
+    ['вик|водопровод|канализац|водопроводчик|тръб', 'Вътрешни ВиК мрежи', 'prisystven-kurs-vytreshni-vik-mrezhi'],
+    ['възобновя|фотоволта|солар|слънчев|панел|енерги', 'Възобновяеми енергийни източници', 'prisystven-kurs-vyzobnovyaemi-energiyni-iztochnici']
+  ];
+  var ta = box.querySelector('textarea'), sug = box.querySelector('.ch-sug'), list = box.querySelector('.ch-sug-list');
+  function suggest() {
+    var t = (ta.value || '').toLowerCase(), out = [], seenU = {};
+    if (t.length >= 3) C.forEach(function (c) {
+      if (out.length < 5 && new RegExp(c[0]).test(t)) {
+        var u = c[2] ? '/course/' + c[2] : '/courses';
+        if (!seenU[u]) { seenU[u] = 1; out.push('<a href="' + u + '">→ ' + c[1] + '</a>'); }
+      }
+    });
+    list.innerHTML = out.join('');
+    sug.style.display = out.length ? 'block' : 'none';
+  }
+  if (ta) ta.addEventListener('input', suggest);
+  var form = box.querySelector('form');
+  list.addEventListener('click', function (e) {
+    var a = e.target.closest('a'); if (!a) return;
+    if (!form.checkValidity()) return;
+    e.preventDefault();
+    var go = function () { location.href = a.getAttribute('href'); };
+    if (form.requestSubmit) form.requestSubmit(); else form.querySelector('[type=submit]').click();
+    var n = 0, w = setInterval(function () {
+      n++;
+      var done = box.querySelector('.w-form-done');
+      if ((done && getComputedStyle(done).display !== 'none') || n > 40) { clearInterval(w); go(); }
+    }, 100);
+  });
   if (!seen()) setTimeout(function () { if (!seen()) box.classList.add('open'); }, 5000);
 })();
 </script>
