@@ -1,0 +1,24 @@
+<script>
+// Поправя текстовете в прозорците за покупка на страницата на курса:
+// „минумум“ → „минимум“, „Изпратите“ → „Изпратете“ и „10 клас“ → „12 клас“ за курсовете,
+// които изискват средно образование. Слага се в Courses Template → Before </body> tag.
+(function () {
+  var NEED_12 = [
+    'stroitelen-tehnik',
+    'profesionalen-kurs-za-interioren-i-eksterioren-dizayner-palna-profesiya',
+    'prisystven-uskoren-kurs-po-interioren-dizayn',
+    'prisystven-kurs-elektricheski-instalacii-elektrotehnik',
+    'prisystven-kurs-vyzobnovyaemi-energiyni-iztochnici'
+  ];
+  var slug = location.pathname.split('/').pop();
+  var klas12 = NEED_12.indexOf(slug) >= 0;
+  var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  var n;
+  while ((n = w.nextNode())) {
+    var t = n.nodeValue, o = t;
+    t = t.replace(/минумум/g, 'минимум').replace(/Изпратите/g, 'Изпратете');
+    if (klas12) t = t.replace(/(минимум\s*)10(\s*клас)/g, '$112$2');
+    if (t !== o) n.nodeValue = t;
+  }
+})();
+</script>
