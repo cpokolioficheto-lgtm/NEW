@@ -13,7 +13,11 @@
   var kids = Array.prototype.slice.call(card.children);
   for (var i = 0; i < kids.length; i++) {
     var el = kids[i];
-    if (/Цена на профи курса/.test(el.textContent)) { var ln = el.querySelector('.line-divider'); if (ln) ln.style.display = 'none'; break; }
+    if (/Цена на профи курса/.test(el.textContent)) {
+      var ln = el.querySelector('.line-divider'); if (ln) ln.style.display = 'none';
+      var hd = el.querySelector('.sub-heading'); if (hd) hd.textContent = 'Цена на курса';
+      break;
+    }
     if (el.id === 'button_buy') { var hb = el.querySelector('#buy_button-hobby'); if (hb) hb.style.display = 'none'; }
     else el.style.display = 'none';
   }
