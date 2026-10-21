@@ -5,9 +5,17 @@
   var NO_HOBBY = [
     'prisystven-kurs-dekorativni-mazilki-mikrociment',
     'prisystven-kurs-po-dekorativna-mazilka-travertin',
-    'prisystven-kurs-venecianska-mazilka'
+    'prisystven-kurs-venecianska-mazilka',
+    'prisystven-kurs-po-dekorativni-mazilki-dyun-i-antiko'
   ];
   if (NO_HOBBY.indexOf(location.pathname.split('/').pop()) < 0) return;
+  // карето „Хоби курс:“ в описанието
+  document.querySelectorAll('.course_content-divided-item').forEach(function (it) {
+    if (/Хоби курс/.test(it.textContent)) {
+      it.style.display = 'none';
+      if (it.parentElement) it.parentElement.style.gridTemplateColumns = '1fr';
+    }
+  });
   var card = document.querySelector('.course-pricing-card');
   if (!card) return;
   var kids = Array.prototype.slice.call(card.children);
