@@ -1,0 +1,21 @@
+<script>
+// Скрива хоби варианта (цена и бутон) за изброените присъствени курсове.
+// Courses Template → Before </body> tag.
+(function () {
+  var NO_HOBBY = [
+    'prisystven-kurs-dekorativni-mazilki-mikrociment',
+    'prisystven-kurs-po-dekorativna-mazilka-travertin',
+    'prisystven-kurs-venecianska-mazilka'
+  ];
+  if (NO_HOBBY.indexOf(location.pathname.split('/').pop()) < 0) return;
+  var card = document.querySelector('.course-pricing-card');
+  if (!card) return;
+  var kids = Array.prototype.slice.call(card.children);
+  for (var i = 0; i < kids.length; i++) {
+    var el = kids[i];
+    if (/Цена на профи курса/.test(el.textContent)) { var ln = el.querySelector('.line-divider'); if (ln) ln.style.display = 'none'; break; }
+    if (el.id === 'button_buy') { var hb = el.querySelector('#buy_button-hobby'); if (hb) hb.style.display = 'none'; }
+    else el.style.display = 'none';
+  }
+})();
+</script>
