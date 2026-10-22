@@ -1,0 +1,57 @@
+<script>
+// Опити за тестовете (Строителен техник и Интериорен дизайн).
+// Чете от Memberstack <ключ>_opiti и оценката <ключ>; ако има 3 опита и няма 60+,
+// скрива линка към теста и показва телефон за връзка. Иначе показва оставащите опити.
+// Modules Template → Before </body> tag.
+(function () {
+  var MAX = 3, PASS = 60, PHONE = '0894 511 093', TEL = 'tel:+359894511093';
+  var FORMS = {
+    'MV6L2TYs22VxSDEP7': 'st_zbut', 'zQ3ZWBgAnfFCTfmdA': 'st_ikonomika', 'Ld7wygXQicBsRtFF8': 'st_pokrivi',
+    'oPwEoUWxHqBERT9L9': 'st_informatika', 'XAYNRTWvbzjWJ8PK9': 'st_podgotovka', 'dReTmq9ASDd5NHNe7': 'st_organizaciq-smr',
+    'PyQAmRFwvGStUs5M7': 'st_osp', 'e9bLDog77zkKVFtS9': 'st_prtd', 'S9rAaZosuwVKn6kM9': 'st_grub-stroej',
+    'JWU4frisRFU6kvCQ8': 'st_vynshni-dovyrshitelni', 'jfnXjPomCaMTEYaw5': 'st_vytreshni-dovyrshitelni',
+    'Df18HmjksaBh5uh66': 'st_ims', 'jRDDiMennd4WJHXg7': 'st_ueisd', 'bMbnd2w4k1o1GPdz6': 'st_trd',
+    'RbvWPmh3V3hRakFu6': 'st_ee', 'EALftctGsp8BegkW6': 'st_gi', 'X6XJ7rfSuunraRCW8': 'st_organizaciq-rp',
+    'pnwjnbFQeUW8snnq6': 'st_zemni-raboti',
+    'PtTTFqGptvpzzFZn6': 'in_zbut', 'FNqpp9g9TdXmLYPJ9': 'in_ikonomika', 'qD2bzPr5GPhQTTXFA': 'in_materiali-tehnologii',
+    'fCixMbVSAcm6ZSCy5': 'in_izgrajdane-strukturi', 'gATRb3vm5xf24Ap96': 'in_prilagane-principi',
+    'p2ssyz6KyQZkLz7d8': 'in_realizaciq', 'bApZJGmZESns2rNt8': 'in_analiz', '8TMpizZqR8h6WqRS8': 'in_izgotvqne-cherteji',
+    'C7ecy9BZtLWKBYee7': 'in_podbor-kombinirane', 'sbMWkvyFcfWSEdFu8': 'in_prezentirane', 'ZCGhYv2RbiDok22f8': 'in_skicirane',
+    'WqUmb1PfcH1nhvE96': 'in_maket', 'VwhACBBgBUW69pyu5': 'in_maket-nadgrajdane'
+  };
+
+  function apply(meta) {
+    document.querySelectorAll('.lesson-wrapper').forEach(function (w) {
+      var a = w.querySelector('#lesson_link') || w.querySelector('a');
+      var src = (a && a.getAttribute('href') || '') + ' ' + ((w.querySelector('#lesson_test-link') || {}).textContent || '');
+      var m = src.match(/forms\.gle\/([A-Za-z0-9]+)/);
+      var key = m && FORMS[m[1]];
+      if (!key) return;
+      var score = String(meta[key] || '').match(/^\s*(\d+)\s*\/\s*100/);
+      if (score && Number(score[1]) >= PASS) return;            // вече е издържан
+      var tries = Number(meta[key + '_opiti']) || 0;
+      var ps = w.querySelectorAll('.lesson-item-wrapper p');
+      var info = Array.prototype.filter.call(ps, function (p) { return /опита/.test(p.textContent); })[0];
+      var go = Array.prototype.filter.call(ps, function (p) { return /Попълни теста/.test(p.textContent); })[0];
+      if (tries >= MAX) {
+        if (go) go.textContent = 'Обадете се: ' + PHONE;
+        if (info) info.textContent = 'Изчерпахте опитите за този тест. Моля, свържете се с нас на ' + PHONE + '.';
+        if (a) { a.setAttribute('href', TEL); a.removeAttribute('target'); }
+      } else if (tries > 0 && info) {
+        info.textContent = 'Остават ви ' + (MAX - tries) + ' от ' + MAX + ' опита';
+      }
+    });
+  }
+  window.cpoApplyAttempts = apply;
+
+  var n = 0, t = setInterval(function () {
+    n++;
+    if (window.$memberstackDom) {
+      clearInterval(t);
+      window.$memberstackDom.getCurrentMember().then(function (r) {
+        if (r && r.data) apply(r.data.metaData || {});
+      }).catch(function () {});
+    } else if (n > 50) clearInterval(t);
+  }, 100);
+})();
+</script>
