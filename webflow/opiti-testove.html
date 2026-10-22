@@ -1,10 +1,10 @@
 <script>
 // Опити за тестовете (Строителен техник и Интериорен дизайн).
-// Чете от Memberstack опитите (st_opiti / in_opiti) и оценката <ключ>; ако има 3 опита и няма 60+,
+// Чете от Memberstack опитите (st_opiti / in_opiti) и оценката <ключ>; ако има 3 опита и няма 50+ т. (оценка 3.00+),
 // скрива линка към теста и показва телефон за връзка. Иначе показва оставащите опити.
 // Modules Template → Before </body> tag.
 (function () {
-  var MAX = 3, PASS = 60, PHONE = '0894 511 093', TEL = 'tel:+359894511093';
+  var MAX = 3, PASS = 50, PHONE = '0894 511 093', TEL = 'tel:+359894511093';
   var FORMS = {
     'MV6L2TYs22VxSDEP7': 'st_zbut', 'zQ3ZWBgAnfFCTfmdA': 'st_ikonomika', 'Ld7wygXQicBsRtFF8': 'st_pokrivi',
     'oPwEoUWxHqBERT9L9': 'st_informatika', 'XAYNRTWvbzjWJ8PK9': 'st_podgotovka', 'dReTmq9ASDd5NHNe7': 'st_organizaciq-smr',
@@ -31,8 +31,10 @@
       var m = src.match(/forms\.gle\/([A-Za-z0-9]+)/);
       var key = m && FORMS[m[1]];
       if (!key) return;
-      var score = String(meta[key] || '').match(/^\s*(\d+)\s*\/\s*100/);
-      if (score && Number(score[1]) >= PASS) return;            // вече е издържан
+      var val = String(meta[key] || '');
+      var pts = val.match(/^\s*(\d+(?:[.,]\d+)?)\s*\/\s*100/);           // стар формат „X / 100“
+      var gr = val.match(/(Среден|Добър|Много добър|Отличен)\s+\d/);      // „Отличен 5.50“
+      if (gr || (pts && Number(pts[1].replace(',', '.')) >= PASS)) return; // вече е издържан
       var n = tries(meta, key);
       var ps = w.querySelectorAll('.lesson-item-wrapper p');
       var info = Array.prototype.filter.call(ps, function (p) { return /опита/.test(p.textContent); })[0];
