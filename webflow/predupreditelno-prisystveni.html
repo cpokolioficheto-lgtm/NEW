@@ -2,21 +2,14 @@
 #cpo-pay{position:fixed;inset:0;z-index:99995;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:16px}
 #cpo-pay.open{display:flex}
 #cpo-pay .cp-box{background:#fff;border:4px solid #d0021b;border-radius:16px;max-width:560px;width:100%;max-height:92vh;overflow:auto;padding:28px 24px 22px;text-align:center;font-family:inherit;box-shadow:0 10px 40px rgba(0,0,0,.35)}
-#cpo-pay .cp-icon{font-size:52px;line-height:1;margin-bottom:8px}
-#cpo-pay h3{margin:0 0 14px;font-size:30px;line-height:1.2;color:#d0021b;font-weight:800;text-transform:uppercase}
-#cpo-pay .cp-red{font-size:21px;line-height:1.4;color:#d0021b;font-weight:700;margin:0 0 16px}
 #cpo-pay ol{text-align:left;margin:0 0 16px;padding-left:24px;font-size:17px;line-height:1.5;color:#222}
 #cpo-pay ol li{margin-bottom:6px}
 #cpo-pay .cp-spam{background:#fff3f3;border-radius:8px;padding:10px 12px;font-size:15px;color:#a00;margin:0 0 18px}
 #cpo-pay .cp-go{width:100%;border:0;border-radius:999px;background:#0ca36b;color:#fff;font-size:18px;font-weight:700;padding:14px;cursor:pointer}
 #cpo-pay .cp-back{display:block;width:100%;margin-top:10px;border:0;background:none;color:#555;font-size:15px;cursor:pointer;text-decoration:underline}
-@media (max-width:480px){#cpo-pay h3{font-size:24px}#cpo-pay .cp-red{font-size:18px}#cpo-pay ol{font-size:16px}}
 </style>
-<div id="cpo-pay" role="dialog" aria-modal="true" aria-labelledby="cp-title">
+<div id="cpo-pay" role="dialog" aria-modal="true" aria-label="Важно преди плащане">
   <div class="cp-box">
-    <div class="cp-icon">⚠️</div>
-    <h3 id="cp-title">Важно! Прочетете преди плащане</h3>
-    <p class="cp-red">След плащането задължително се върнете в нашия сайт и въведете име и имейл, иначе няма да получите документите за курса!</p>
     <ol>
       <li>Платете с карта в myPOS.</li>
       <li>Натиснете <b>„Обратно към магазина“</b> или изчакайте да ви върне към сайта. <b>Не затваряйте страницата!</b></li>
